@@ -23,6 +23,7 @@ const VALID_COLUMN_OPTIONS = [
 ];
 
 const VALID_STATUS_OPTIONS = [
+  'content_gen',
   'ready_to_upload',
   'uploaded_to_wechat',
   'failed'
