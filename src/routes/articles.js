@@ -78,9 +78,6 @@ const isValidColumn = (value) => {
 };
 
 const isValidStatus = (value) => {
-  if (Array.isArray(value)) {
-    return value.every(v => VALID_STATUS_OPTIONS.includes(v));
-  }
   return VALID_STATUS_OPTIONS.includes(value);
 };
 
@@ -140,7 +137,7 @@ router.post('/', async (req, res) => {
     res.ok({
       record_id: result.record_id,
       article_id: result.fields && result.fields.article_id,
-      status: Array.isArray(fields.status) ? fields.status[0] : fields.status
+      status: fields.status
     }, '已在飞书创建文章草稿', 201);
   } catch (error) {
     res.err('SERVER_ERROR', error.message, 500);
@@ -192,7 +189,7 @@ router.patch('/:record_id', async (req, res) => {
     res.ok({
       record_id,
       updated_fields: updatedFields,
-      status: parsedFields.status && parsedFields.status.length > 0 ? parsedFields.status[0] : ''
+      status: parsedFields.status || ''
     }, '已更新飞书文章草稿');
   } catch (error) {
     if (error.message.startsWith('VALIDATION_ERROR:')) {

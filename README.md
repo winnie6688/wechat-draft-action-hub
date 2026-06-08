@@ -85,7 +85,7 @@ PORT=3000
 | content_html | 文本 | HTML 内容 |
 | cover_image_url | URL | 封面图链接 |
 | content_source_url | URL | 原文链接 |
-| status | 多选 | 状态（content_gen / ready_to_upload / uploaded_to_wechat / failed） |
+| status | 单选 | 状态（content_gen / ready_to_upload / uploaded_to_wechat / failed） |
 | wechat_draft_media_id | 文本 | 微信草稿 media_id |
 | wechat_upload_result | 多行文本 | 上传结果（成功：已上传到微信草稿箱，media_id=xxx；失败：上传失败：具体错误信息） |
 | missing_fields | 文本 | 缺失的必填字段 |

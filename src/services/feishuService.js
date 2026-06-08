@@ -138,14 +138,6 @@ const formatFieldsForBitable = (fields) => {
         }
         break;
 
-      case 'status':
-        if (Array.isArray(value)) {
-          formatted[key] = value;
-        } else if (typeof value === 'string' && value) {
-          formatted[key] = [value];
-        }
-        break;
-
       case 'missing_fields':
       case 'warning_fields':
         if (typeof value === 'string' && value) {
@@ -155,6 +147,7 @@ const formatFieldsForBitable = (fields) => {
         }
         break;
 
+      case 'status':
       case 'column':
       case 'title':
       case 'author':
@@ -191,14 +184,6 @@ const parseBitableFields = (fields) => {
           parsed[key] = value;
         } else {
           parsed[key] = '';
-        }
-        break;
-
-      case 'status':
-        if (Array.isArray(value)) {
-          parsed[key] = value;
-        } else {
-          parsed[key] = [];
         }
         break;
 
