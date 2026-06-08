@@ -1,14 +1,14 @@
 {
-  "name": "wechat-article-action-server",
+  "name": "wechat-draft-action-hub",
   "version": "1.0.0",
-  "description": "ChatGPT Action 中间层服务，用于管理公众号文章草稿并同步到飞书和微信",
+  "description": "通用的文章草稿后端中介服务，用于在飞书多维表格与微信公众号草稿箱之间流转数据",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "test": "echo \"No tests yet\""
   },
-  "keywords": ["wechat", "feishu", "article", "draft", "action"],
+  "keywords": ["wechat", "feishu", "article", "draft", "backend"],
   "author": "",
   "license": "MIT",
   "dependencies": {

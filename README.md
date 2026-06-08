@@ -1,8 +1,10 @@
-# WeChat Article Action Server
+# WeChat Draft Action Hub
 
-> 供 ChatGPT Action 调用的中间层服务，用于管理公众号文章草稿并同步到飞书多维表格和微信公众号
+> 一个通用的文章草稿后端中介服务，用于在飞书多维表格与微信公众号草稿箱之间建立可控的数据流转链路。
 
-## 使用约定（面向 ChatGPT/Skill）
+本项目面向通用调用场景，可被 ChatGPT、Coze、AI Agent、前端页面、自动化工作流或其他系统调用；当前仓库仅提供后端 API 能力，不绑定某一类特定平台或 Agent 产品。
+
+## 使用约定（面向 AI Agent / 自动化工作流 / 前端系统）
 
 - 每轮对话只处理一篇文章：一个对话对应飞书多维表格中的一条记录
 - 任意字段可分阶段写入：title / digest / content_markdown / content_html / cover_image_url / column / status 均支持单独更新
@@ -52,6 +54,8 @@ npm install
 
 ### 2. 配置环境变量
 
+说明：鉴权变量名当前仍为 `ACTION_API_KEY`，这是出于兼容现有调用方的考虑；其实际用途是通用 API Bearer Token。
+
 复制 `.env.example` 为 `.env`，填入真实值：
 
 ```bash
@@ -61,7 +65,7 @@ cp .env.example .env
 编辑 `.env` 配置：
 
 ```
-ACTION_API_KEY=your_action_api_key_here
+ACTION_API_KEY=your_api_bearer_token_here
 
 # 飞书配置
 FEISHU_APP_ID=your_feishu_app_id_here
