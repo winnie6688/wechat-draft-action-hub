@@ -4,19 +4,13 @@ const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({
-      success: false,
-      message: 'Unauthorized: Missing or invalid Authorization header'
-    });
+    return res.err('UNAUTHORIZED', 'Unauthorized: Missing or invalid Authorization header', 401);
   }
 
   const token = authHeader.split(' ')[1];
   
   if (token !== ACTION_API_KEY) {
-    return res.status(403).json({
-      success: false,
-      message: 'Forbidden: Invalid API key'
-    });
+    return res.err('FORBIDDEN', 'Forbidden: Invalid API key', 403);
   }
 
   next();

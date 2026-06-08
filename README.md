@@ -135,8 +135,12 @@ Content-Type: application/json
 
 ```json
 {
-  "record_id": "recXXXXXX",
-  "status": "草稿",
+  "success": true,
+  "data": {
+    "record_id": "recXXXXXX",
+    "article_id": "1",
+    "status": "草稿"
+  },
   "message": "已在飞书创建文章草稿"
 }
 ```
@@ -160,8 +164,12 @@ Content-Type: application/json
 
 ```json
 {
-  "record_id": "recXXXXXX",
-  "updated_fields": ["title", "content_html", "digest", "cover_image_url", "column"],
+  "success": true,
+  "data": {
+    "record_id": "recXXXXXX",
+    "updated_fields": ["title", "content_html", "digest", "cover_image_url", "column"],
+    "status": "草稿"
+  },
   "message": "已更新飞书文章草稿"
 }
 ```
@@ -176,9 +184,12 @@ GET /api/articles/{record_id}/check
 
 ```json
 {
-  "ready": true,
-  "missing_fields": [],
-  "warning_fields": [],
+  "success": true,
+  "data": {
+    "ready": true,
+    "missing_fields": [],
+    "warning_fields": []
+  },
   "message": "文章字段完整，可以上传到微信公众号"
 }
 ```
@@ -194,8 +205,10 @@ POST /api/articles/{record_id}/upload-to-wechat
 ```json
 {
   "success": true,
-  "ready": true,
-  "wechat_draft_media_id": "xxxxx",
+  "data": {
+    "ready": true,
+    "wechat_draft_media_id": "xxxxx"
+  },
   "message": "已成功创建微信公众号草稿，请到公众号后台审核"
 }
 ```
@@ -205,8 +218,10 @@ POST /api/articles/{record_id}/upload-to-wechat
 ```json
 {
   "success": false,
-  "ready": false,
-  "missing_fields": ["content_html", "cover_image_url"],
+  "error_code": "INCOMPLETE_FIELDS",
+  "data": {
+    "missing_fields": ["content_html", "cover_image_url"]
+  },
   "message": "缺少必填字段: content_html, cover_image_url"
 }
 ```

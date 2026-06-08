@@ -109,24 +109,15 @@ router.post('/', async (req, res) => {
     const { title, column, status } = body;
 
     if (!title || !column) {
-      return res.status(400).json({
-        success: false,
-        message: 'title 和 column 为必填字段'
-      });
+      return res.err('VALIDATION_ERROR', 'title 和 column 为必填字段', 400);
     }
 
     if (!isValidColumn(column)) {
-      return res.status(400).json({
-        success: false,
-        message: `column 必须是以下值之一: ${VALID_COLUMN_OPTIONS.join(', ')}`
-      });
+      return res.err('VALIDATION_ERROR', `column 必须是以下值之一: ${VALID_COLUMN_OPTIONS.join(', ')}`, 400);
     }
 
     if (status && !isValidStatus(status)) {
-      return res.status(400).json({
-        success: false,
-        message: `status 必须是以下值之一: ${VALID_STATUS_OPTIONS.join(', ')}`
-      });
+      return res.err('VALIDATION_ERROR', `status 必须是以下值之一: ${VALID_STATUS_OPTIONS.join(', ')}`, 400);
     }
 
     // 收集合法字段（author 不允许覆盖，始终用默认值）
@@ -145,17 +136,13 @@ router.post('/', async (req, res) => {
 
     const result = await createFeishuRecord(fields);
 
-    res.status(201).json({
+    res.ok({
       record_id: result.record_id,
       article_id: result.fields && result.fields.article_id,
-      status: Array.isArray(fields.status) ? fields.status[0] : (fields.status || '草稿'),
-      message: '已在飞书创建文章草稿'
-    });
+      status: Array.isArray(fields.status) ? fields.status[0] : (fields.status || '草稿')
+    }, '已在飞书创建文章草稿', 201);
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
+    res.err('SERVER_ERROR', error.message, 500);
   }
 });
 
@@ -177,10 +164,10 @@ router.patch('/:record_id', async (req, res) => {
 
       // 校验: 单选/多选字段的合法值
       if (key === 'column' && !isValidColumn(value)) {
-        throw new Error(`column 必须是以下值之一: ${VALID_COLUMN_OPTIONS.join(', ')}`);
+        throw new Error(`VALIDATION_ERROR:column 必须是以下值之一: ${VALID_COLUMN_OPTIONS.join(', ')}`);
       }
       if (key === 'status' && !isValidStatus(value)) {
-        throw new Error(`status 必须是以下值之一: ${VALID_STATUS_OPTIONS.join(', ')}`);
+        throw new Error(`VALIDATION_ERROR:status 必须是以下值之一: ${VALID_STATUS_OPTIONS.join(', ')}`);
       }
 
       // 过滤掉空字符串，但允许 0 和 false 等假值
@@ -193,10 +180,7 @@ router.patch('/:record_id', async (req, res) => {
     });
 
     if (updatedFields.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: '没有可更新的有效字段'
-      });
+      return res.err('VALIDATION_ERROR', '没有可更新的有效字段', 400);
     }
 
     await updateFeishuRecord(record_id, validFields);
@@ -204,17 +188,17 @@ router.patch('/:record_id', async (req, res) => {
     const updatedRecord = await findFeishuRecordByRecordId(record_id);
     const parsedFields = parseBitableFields(updatedRecord.fields);
 
-    res.json({
+    res.ok({
       record_id,
       updated_fields: updatedFields,
-      status: parsedFields.status && parsedFields.status.length > 0 ? parsedFields.status[0] : '',
-      message: '已更新飞书文章草稿'
-    });
+      status: parsedFields.status && parsedFields.status.length > 0 ? parsedFields.status[0] : ''
+    }, '已更新飞书文章草稿');
   } catch (error) {
-    res.status(error.message && (error.message.includes('必须') || error.message.includes('以下')) ? 400 : 500).json({
-      success: false,
-      message: error.message
-    });
+    if (error.message.startsWith('VALIDATION_ERROR:')) {
+      res.err('VALIDATION_ERROR', error.message.replace('VALIDATION_ERROR:', ''), 400);
+    } else {
+      res.err('SERVER_ERROR', error.message, 500);
+    }
   }
 });
 
@@ -226,10 +210,7 @@ router.get('/:record_id/check', async (req, res) => {
     const record = await findFeishuRecordByRecordId(record_id);
 
     if (!record) {
-      return res.status(404).json({
-        success: false,
-        message: '未找到文章记录'
-      });
+      return res.err('NOT_FOUND', '未找到文章记录', 404);
     }
 
     const article = parseBitableFields(record.fields);
@@ -252,17 +233,13 @@ router.get('/:record_id/check', async (req, res) => {
       ? '文章字段完整，可以上传到微信公众号'
       : `缺少必填字段: ${missingFields.join(', ')}`;
 
-    res.json({
+    res.ok({
       ready,
       missing_fields: missingFields,
-      warning_fields: warningFields,
-      message
-    });
+      warning_fields: warningFields
+    }, message);
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
+    res.err('SERVER_ERROR', error.message, 500);
   }
 });
 
@@ -274,11 +251,7 @@ router.post('/:record_id/upload-to-wechat', async (req, res) => {
     const record = await findFeishuRecordByRecordId(record_id);
 
     if (!record) {
-      return res.status(404).json({
-        success: false,
-        ready: false,
-        message: '未找到文章记录'
-      });
+      return res.err('NOT_FOUND', '未找到文章记录', 404);
     }
 
     const article = parseBitableFields(record.fields);
@@ -293,12 +266,7 @@ router.post('/:record_id/upload-to-wechat', async (req, res) => {
         status: 'failed'
       });
 
-      return res.json({
-        success: false,
-        ready: false,
-        missing_fields: missingFields,
-        message: `缺少必填字段: ${missingFields.join(', ')}`
-      });
+      return res.err('INCOMPLETE_FIELDS', `缺少必填字段: ${missingFields.join(', ')}`, 400, { missing_fields: missingFields });
     }
 
     const thumbMediaId = await uploadImageMaterial(article.cover_image_url);
@@ -320,12 +288,10 @@ router.post('/:record_id/upload-to-wechat', async (req, res) => {
       warning_fields: warningFields
     });
 
-    res.json({
-      success: true,
+    res.ok({
       ready: true,
-      wechat_draft_media_id: wechatDraftMediaId,
-      message: '已成功创建微信公众号草稿，请到公众号后台审核'
-    });
+      wechat_draft_media_id: wechatDraftMediaId
+    }, '已成功创建微信公众号草稿，请到公众号后台审核');
   } catch (error) {
     try {
       await updateFeishuRecord(req.params.record_id, {
@@ -334,11 +300,7 @@ router.post('/:record_id/upload-to-wechat', async (req, res) => {
       });
     } catch (e) {}
 
-    res.status(500).json({
-      success: false,
-      ready: false,
-      message: error.message
-    });
+    res.err('WECHAT_API_ERROR', error.message, 500);
   }
 });
 
