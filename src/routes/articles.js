@@ -314,7 +314,7 @@ router.post('/:record_id/upload-to-wechat', async (req, res) => {
 
     await updateFeishuRecord(record_id, {
       wechat_draft_media_id: wechatDraftMediaId,
-      wechat_upload_result: '待审核',
+      wechat_upload_result: `已上传到微信草稿箱，media_id=${wechatDraftMediaId}`,
       status: 'uploaded_to_wechat',
       missing_fields: [],
       warning_fields: warningFields
@@ -330,7 +330,7 @@ router.post('/:record_id/upload-to-wechat', async (req, res) => {
     try {
       await updateFeishuRecord(req.params.record_id, {
         status: 'failed',
-        wechat_upload_result: '待审核'
+        wechat_upload_result: `上传失败：${error.message}`
       });
     } catch (e) {}
 

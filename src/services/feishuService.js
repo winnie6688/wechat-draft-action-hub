@@ -156,12 +156,12 @@ const formatFieldsForBitable = (fields) => {
         break;
 
       case 'column':
-      case 'wechat_upload_result':
       case 'title':
       case 'author':
       case 'digest':
       case 'content_markdown':
       case 'content_html':
+      case 'wechat_upload_result':
       case 'wechat_draft_media_id':
         if (typeof value === 'string' && value !== '') {
           formatted[key] = value;
