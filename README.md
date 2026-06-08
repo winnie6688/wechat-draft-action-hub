@@ -2,6 +2,13 @@
 
 > 供 ChatGPT Action 调用的中间层服务，用于管理公众号文章草稿并同步到飞书多维表格和微信公众号
 
+## 使用约定（面向 ChatGPT/Skill）
+
+- 每轮对话只处理一篇文章：一个对话对应飞书多维表格中的一条记录
+- 任意字段可分阶段写入：title / digest / content_markdown / content_html / cover_image_url / column / status 均支持单独更新
+- record_id 在对话内保存：首次创建后返回 record_id，后续更新与检查都直接使用该 record_id
+- 入库与上传分离：创建/更新只写飞书；仅在明确调用上传接口时，才会同步到微信公众号草稿箱
+
 ## 功能特性
 
 - **飞书草稿管理**：通过飞书多维表格存储和管理文章草稿
@@ -117,17 +124,19 @@ Authorization: Bearer {ACTION_API_KEY}
 
 ### 1. 创建文章草稿
 
+支持任意单字段创建（至少提供一个字段），`column` 可选，`status` 默认 `content_gen`。
+
 ```
 POST /api/articles
 Content-Type: application/json
 
 {
-  "title": "文章标题",
-  "column": "AI 产品落地指南",
+  "title": "文章标题（可选）",
+  "column": "AI 产品落地指南（可选）",
   "digest": "文章摘要（可选）",
   "content_html": "<p>文章 HTML 内容（可选）</p>",
   "content_markdown": "文章 Markdown 内容（可选）",
-  "cover_image_url": "https://example.com/cover.jpg"
+  "cover_image_url": "https://example.com/cover.jpg（可选）"
 }
 ```
 

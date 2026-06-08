@@ -103,13 +103,18 @@ const POST_ALLOWED_FIELDS = [
 router.post('/', async (req, res) => {
   try {
     const body = req.body || {};
-    const { title, column, status } = body;
+    const { column, status } = body;
 
-    if (!title || !column) {
-      return res.err('VALIDATION_ERROR', 'title 和 column 为必填字段', 400);
+    const hasAnyField = POST_ALLOWED_FIELDS.some(key => {
+      const value = body[key];
+      return value !== undefined && value !== null && value !== '';
+    });
+
+    if (!hasAnyField) {
+      return res.err('VALIDATION_ERROR', `至少提供一个字段用于创建草稿: ${POST_ALLOWED_FIELDS.join(', ')}`, 400);
     }
 
-    if (!isValidColumn(column)) {
+    if (column && !isValidColumn(column)) {
       return res.err('VALIDATION_ERROR', `column 必须是以下值之一: ${VALID_COLUMN_OPTIONS.join(', ')}`, 400);
     }
 
@@ -117,16 +122,14 @@ router.post('/', async (req, res) => {
       return res.err('VALIDATION_ERROR', `status 必须是以下值之一: ${VALID_STATUS_OPTIONS.join(', ')}`, 400);
     }
 
-    // 收集合法字段（author 不允许覆盖，始终用默认值）
+    // 收集合法字段（author 不允许覆盖，始终用默认值；status 默认 content_gen）
     const fields = {
-      title,
-      column,
       author: AUTHOR_DEFAULT,
       status: status || 'content_gen'
     };
 
     POST_ALLOWED_FIELDS.forEach(key => {
-      if (key === 'title' || key === 'column' || key === 'status') return;
+      if (key === 'status') return;
       const value = body[key];
       if (value === undefined || value === null || value === '') return;
       fields[key] = value;
