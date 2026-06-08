@@ -139,7 +139,7 @@ Content-Type: application/json
   "data": {
     "record_id": "recXXXXXX",
     "article_id": "1",
-    "status": "草稿"
+    "status": "content_gen"
   },
   "message": "已在飞书创建文章草稿"
 }
@@ -168,7 +168,7 @@ Content-Type: application/json
   "data": {
     "record_id": "recXXXXXX",
     "updated_fields": ["title", "content_html", "digest", "cover_image_url", "column"],
-    "status": "草稿"
+    "status": "content_gen"
   },
   "message": "已更新飞书文章草稿"
 }

@@ -124,11 +124,12 @@ router.post('/', async (req, res) => {
     const fields = {
       title,
       column,
-      author: AUTHOR_DEFAULT
+      author: AUTHOR_DEFAULT,
+      status: status || 'content_gen'
     };
 
     POST_ALLOWED_FIELDS.forEach(key => {
-      if (key === 'title' || key === 'column') return;
+      if (key === 'title' || key === 'column' || key === 'status') return;
       const value = body[key];
       if (value === undefined || value === null || value === '') return;
       fields[key] = value;
@@ -139,7 +140,7 @@ router.post('/', async (req, res) => {
     res.ok({
       record_id: result.record_id,
       article_id: result.fields && result.fields.article_id,
-      status: Array.isArray(fields.status) ? fields.status[0] : (fields.status || '草稿')
+      status: Array.isArray(fields.status) ? fields.status[0] : fields.status
     }, '已在飞书创建文章草稿', 201);
   } catch (error) {
     res.err('SERVER_ERROR', error.message, 500);
