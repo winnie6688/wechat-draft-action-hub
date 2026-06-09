@@ -6,12 +6,22 @@ const {
 
 const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
+  const headerToken = req.headers['x-action-api-key'] || req.headers['x-api-key'];
   const sessionCode = req.headers['x-session-code'];
 
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.slice('Bearer '.length).trim();
 
     if (token === ACTION_API_KEY) {
+      req.auth = {
+        type: 'api_key'
+      };
+      return next();
+    }
+  }
+
+  if (typeof headerToken === 'string' && headerToken.trim()) {
+    if (headerToken.trim() === ACTION_API_KEY) {
       req.auth = {
         type: 'api_key'
       };

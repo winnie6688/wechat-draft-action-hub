@@ -130,6 +130,12 @@ npm start
 Authorization: Bearer {ACTION_API_KEY}
 ```
 
+如果你的入口层使用了 Nginx Basic Auth，导致无法同时使用 `Authorization: Bearer ...`，也可以改用：
+
+```
+X-Action-Api-Key: {ACTION_API_KEY}
+```
+
 方式 B：临时 Session Code（推荐给 Skill / AI 调用链）
 
 ```
