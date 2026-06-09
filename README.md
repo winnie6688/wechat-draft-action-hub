@@ -16,7 +16,7 @@
 - **飞书草稿管理**：通过飞书多维表格存储和管理文章草稿
 - **字段完整性检查**：自动检测必填字段是否完整
 - **微信公众号同步**：当字段完整后，一键上传到微信公众号草稿箱
-- **安全鉴权**：所有 API 接口支持 Bearer Token 验证
+- **安全鉴权**：支持固定 Bearer Token 和临时 Session Code 双通道鉴权
 - **选项值约束**：自动校验 column 和 status 的合法选项值
 
 ## 技术栈
@@ -54,7 +54,7 @@ npm install
 
 ### 2. 配置环境变量
 
-说明：鉴权变量名当前仍为 `ACTION_API_KEY`，这是出于兼容现有调用方的考虑；其实际用途是通用 API Bearer Token。
+说明：鉴权变量名当前仍为 `ACTION_API_KEY`，这是出于兼容现有调用方的考虑；其实际用途是固定管理员 API Key，用于生成 Session Code 或直接调用接口。
 
 复制 `.env.example` 为 `.env`，填入真实值：
 
@@ -120,10 +120,116 @@ npm start
 
 ## API 接口
 
-所有 `/api` 接口需在 Header 中添加：
+所有 `/api` 接口默认需鉴权，支持以下两种方式：
+
+方式 A：固定 API Key（管理员/后端直连）
 
 ```
 Authorization: Bearer {ACTION_API_KEY}
+```
+
+方式 B：临时 Session Code（推荐给 Skill / AI 调用链）
+
+```
+X-Session-Code: {SESSION_CODE}
+```
+
+## 后端部署信息
+
+### 1. 接口路径
+
+- POST `/api/articles`
+- PATCH `/api/articles/:record_id`
+- GET `/api/articles/:record_id/check`
+- POST `/api/articles/:record_id/upload-to-wechat`
+
+### 2. 可写字段
+
+- title
+- digest
+- column
+- content_markdown
+- content_html
+- cover_image_url
+- content_source_url
+- status
+
+说明：
+
+- 创建（POST）与更新（PATCH）均支持以上字段的部分写入（分阶段补齐）。
+- author 由后端使用默认值写入（不支持外部覆盖）。
+
+### 3. 上传前必填字段
+
+- title
+- content_html
+- cover_image_url
+
+### 4. 测试返回示例
+
+POST `/api/articles`：
+
+```json
+{
+  "success": true,
+  "data": {
+    "record_id": "rec****",
+    "article_id": "1",
+    "status": "content_gen"
+  },
+  "message": "已在飞书创建文章草稿"
+}
+```
+
+PATCH `/api/articles/:record_id`：
+
+```json
+{
+  "success": true,
+  "data": {
+    "record_id": "rec****",
+    "updated_fields": ["content_markdown"],
+    "status": "content_gen"
+  },
+  "message": "已更新飞书文章草稿"
+}
+```
+
+### 5. Session Code 规则
+
+- 有效期：30 分钟
+- 最大使用次数：20 次
+- 作用范围：仅允许访问文章相关接口
+- 推荐请求头：`X-Session-Code`
+
+### 6. Session Code 生成接口
+
+```
+POST /api/session-codes
+Authorization: Bearer {ACTION_API_KEY}
+```
+
+响应：
+
+```json
+{
+  "success": true,
+  "data": {
+    "session_code": "SC-XXXXXXXXXXXX",
+    "expires_in_seconds": 1800,
+    "expires_in_minutes": 30,
+    "max_uses": 20,
+    "remaining_uses": 20,
+    "scope": "articles_only",
+    "allowed_routes": [
+      "POST /api/articles",
+      "PATCH /api/articles/:record_id",
+      "GET /api/articles/:record_id/check",
+      "POST /api/articles/:record_id/upload-to-wechat"
+    ]
+  },
+  "message": "Session Code 已生成"
+}
 ```
 
 ### 1. 创建文章草稿
@@ -268,9 +374,14 @@ POST /api/articles/{record_id}/upload-to-wechat
 # 健康检查
 curl http://localhost:3000/health
 
-# 创建文章
-curl -X POST http://localhost:3000/api/articles \
+# 生成 Session Code
+curl -X POST http://localhost:3000/api/session-codes \
   -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json"
+
+# 使用 Session Code 创建文章
+curl -X POST http://localhost:3000/api/articles \
+  -H "X-Session-Code: SC-XXXXXXXXXXXX" \
   -H "Content-Type: application/json" \
   -d '{"title":"测试文章","column":"AI 产品落地指南"}'
 ```
@@ -285,9 +396,10 @@ curl -X POST http://localhost:3000/api/articles \
 ## 安全说明
 
 - **切勿将 `.env` 提交到 Git 仓库**（已在 `.gitignore` 中排除）
-- 所有 API 接口通过 `ACTION_API_KEY` 做鉴权
+- 所有 API 接口支持固定 `ACTION_API_KEY` 或临时 `Session Code` 鉴权
 - 飞书和微信的 AppSecret 仅在服务器端使用，不会暴露在接口响应中
 - 建议将 `ACTION_API_KEY` 设置为足够长的随机字符串
+- `Session Code` 为内存态临时凭证，服务重启后会全部失效
 
 ## License
 

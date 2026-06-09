@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const authMiddleware = require('./middleware/auth');
 const articlesRouter = require('./routes/articles');
+const sessionCodesRouter = require('./routes/sessionCodes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -36,6 +37,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/api', authMiddleware);
+app.use('/api/session-codes', sessionCodesRouter);
 app.use('/api/articles', articlesRouter);
 
 app.get('/health', (req, res) => {
