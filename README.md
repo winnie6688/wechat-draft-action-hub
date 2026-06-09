@@ -35,9 +35,11 @@
 │   │   └── auth.js              # API Key 认证中间件
 │   ├── services/
 │   │   ├── feishuService.js      # 飞书 API 服务
+│   │   ├── sessionCodeService.js # Session Code 生成与校验服务
 │   │   └── wechatService.js      # 微信 API 服务
 │   └── routes/
-│       └── articles.js           # 文章相关路由
+│       ├── articles.js           # 文章相关路由
+│       └── sessionCodes.js       # Session Code 生成接口
 ├── .env.example                  # 环境变量示例
 ├── .gitignore                   # Git 忽略配置
 ├── package.json                 # 项目依赖配置
